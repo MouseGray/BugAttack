@@ -7,6 +7,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(MAPS maps/default.map)
 
+if(NOT DEFINED FREETYPE_INCLUDE_DIR)
+    message(FATAL_ERROR "FREETYPE_INCLUDE_DIR not set")
+endif()
+
+if(NOT DEFINED FREETYPE_LIB_DIR)
+    message(FATAL_ERROR "FREETYPE_LIB_DIR not set")
+endif()
+
 add_executable(Game main.cpp
     unit.h unit.cpp
     enemy.h enemy.cpp
@@ -23,9 +31,9 @@ add_executable(Game main.cpp
     maps/default.map
 )
 
-target_include_directories(Game PRIVATE third-party/freetype-2.10.0/include)
+target_include_directories(Game PRIVATE ${FREETYPE_INCLUDE_DIR})
 
-target_link_libraries(Game PRIVATE -lGLEW -lglfw -lGL -lpthread -lX11 -lXrandr -lXi ${CMAKE_CURRENT_SOURCE_DIR}/third-party/freetype-2.10.0/_build/libfreetype.a)
+target_link_libraries(Game PRIVATE -lGLEW -lglfw -lGL -lpthread -lX11 -lXrandr -lXi ${FREETYPE_LIB_DIR}/libfreetype.a)
 
 configure_file(${MAPS} ${MAPS} COPYONLY)
 
@@ -51,4 +59,10 @@ file(GLOB FONTS LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CM
 
 foreach(FONT ${FONTS})
     configure_file(${FONT} ${FONT} COPYONLY)
+endforeach()
+
+file(GLOB LEVELS LIST_DIRECTORIES false RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/levels/*.lvl)
+
+foreach(LEVEL ${LEVELS})
+    configure_file(${LEVEL} ${LEVEL} COPYONLY)
 endforeach()

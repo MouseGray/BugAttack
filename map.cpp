@@ -13,11 +13,9 @@
 #include "render.h"
 
 Map::Map(GLuint texture_id, GLfloat x, GLfloat y, GLfloat w, GLfloat h) :
-    texture_id_{texture_id}, x_{x}, y_{y}, w_{w}, h_{h}
+    texture_id_{texture_id}, x_{x}, y_{y}, w_{w}, h_{h},
+    level_("levels/default.lvl")
 {
-    level_ = 0;
-    wave_ = 10;
-    count = 1000;
     health_ = 3;
     gold_ = 500;
     field_.Load( "maps/default.map" );
@@ -25,38 +23,10 @@ Map::Map(GLuint texture_id, GLfloat x, GLfloat y, GLfloat w, GLfloat h) :
 
 void Map::Update(float time)
 {
-    if(level_ > 0 && count < levels[level_ - 1].second.size())
-    {
-        offset_ -= time;
+    level_.Update(time);
 
-        if(offset_ < 0)
-        {
-            generate_enemies(levels[level_ - 1].second[count]);
-            offset_ = 0.7f;
-            ++count;
-        }
-
-    }
-
-    if(level_ < levels.size())
-    {
-        wave_ -= time;
-    if(wave_ <= 0)
-    {
-        ++level_;
-        if(level_ == levels.size())
-        {
-            count = 1000;
-            wave_ = 0.0f;
-        }
-        else
-        {
-            count = 0;
-            offset_ = 0.7f;
-            wave_ = levels[level_ - 1].first;
-        }
-    }
-    }
+    if(level_.IsNeedGenerate())
+        generate_enemies(level_.EnemyType());
 
     for(auto&& a: enemies_)
     {
@@ -79,13 +49,7 @@ void Map::Update(float time)
     {
         if(e.IsLive())
             return sum;
-        if(e.type_ == UnitType::Bug1)
-            return sum + 50;
-        if(e.type_ == UnitType::Bug2)
-            return sum + 100;
-        if(e.type_ == UnitType::Bug3)
-            return sum + 150;
-        return sum;
+        return sum + e.Cost();
     });
 
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), [](const auto& r)
@@ -94,13 +58,11 @@ void Map::Update(float time)
     }), enemies_.end());
 }
 
-void Map::generate_enemies(int t)
+void Map::generate_enemies(UnitType t)
 {
     auto [spawn_y, spawn_x] = field_.SpawnPoint();
 
-    UnitType type = t == 1 ? UnitType::Bug1 : (t == 2 ? UnitType::Bug2 : UnitType::Bug3);
-
-    enemies_.push_back(Enemy{ type, Point{ spawn_x*20, spawn_y*20 }, 270.0f, 0 });
+    enemies_.push_back(Enemy{ t, Point{ spawn_x*20, spawn_y*20 }, 270.0f, 0 });
 }
 
 bool Map::CanPut(const glm::vec2& pos, const glm::vec2& size) const noexcept
@@ -142,7 +104,7 @@ void Map::Render(class Render& render)
     }
 
     std::string level(9, '\0');
-    sprintf(level.data(), "Level: %2d", level_);
+    sprintf(level.data(), "Level: %2lu", level_.CurrentLevel());
     render.DrawText(level, 640.0f, 440.0f, {0.5, 0.8f, 0.2f, 1.0f});
 
 
@@ -156,13 +118,13 @@ void Map::Render(class Render& render)
     render.DrawText(Gold, 640.0f, 380.0f, {0.5, 0.8f, 0.2f, 1.0f});
 
     std::string text(11, '\0');
-    sprintf(text.data(), "Wave: %5.2f", wave_);
+    sprintf(text.data(), "Wave: %5.2f", level_.TimeOffset());
     render.DrawText(text, 640.0f, 350.0f, {0.5, 0.8f, 0.2f, 1.0f});
 }
 
 bool Map::IsWin() const noexcept
 {
-    return level_ == 10 && enemies_.empty();
+    return level_.IsFinished() && enemies_.empty();
 }
 
 bool Map::IsLost() const noexcept
@@ -175,9 +137,7 @@ void Map::Restart()
     towers_.clear();
     enemies_.clear();
 
-    level_ = 0;
-    wave_ = 10;
-    count = 1000;
+    level_.Restart();
     health_ = 3;
     gold_ = 500;
 }

@@ -9,6 +9,7 @@
 #include "field.h"
 #include "enemy.h"
 #include "tower.h"
+#include "level.h"
 
 class Render;
 
@@ -19,30 +20,11 @@ class Map
 public:
     Map(GLuint texture_id, GLfloat x, GLfloat y, GLfloat w, GLfloat h);
 
-    auto begin()
-    {
-        return enemies_.begin();
-    }
-
-    auto end()
-    {
-        return enemies_.end();
-    }
-
-    auto begin_tower()
-    {
-        return towers_.begin();
-    }
-
-    auto end_tower()
-    {
-        return towers_.end();
-    }
 
     void Update(float time);
 
 
-    void generate_enemies(int);
+    void generate_enemies(UnitType);
 
     bool CanPut(const glm::vec2& pos, const glm::vec2& size) const noexcept;
 
@@ -62,20 +44,14 @@ public:
     GLfloat w_;
     GLfloat h_;
 
-    int level_;
     int gold_;
-
-    float wave_;
-    float offset_;
-    int count;
-
     int health_;
-
-
 
     std::list<Enemy> enemies_;
 
     std::vector<Tower> towers_;
+
+    bugattack::Level level_;
 
     bugattack::Field field_;
 };

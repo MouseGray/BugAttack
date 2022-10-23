@@ -25,6 +25,8 @@ public:
     inline Point Position() const noexcept { return position_; }
 
     inline ID EnemyID() const noexcept { return id_; }
+
+    inline int Cost() const noexcept { return cost_; }
 private:
     static ID GetID() noexcept;
 
@@ -32,4 +34,5 @@ private:
     float velocity_;
     float health_;
     bool in_end_;
+    int cost_;
 };

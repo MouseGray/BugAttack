@@ -12,11 +12,11 @@ Tower::Tower(UnitType type, Point pos, Degree angle) :
         break;
     case UnitType::Laser:
         radius_ = 150.0f;
-        max_reloading_ = 2.0f;
+        max_reloading_ = 3.0f;
         break;
     case UnitType::RocketGun:
         radius_ = 250.0f;
-        max_reloading_ = 5.0f;
+        max_reloading_ = 7.0f;
         break;
     default:
         break;

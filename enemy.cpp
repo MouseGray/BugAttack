@@ -12,14 +12,17 @@ Enemy::Enemy(UnitType type, Point pos, Degree angle, int level) :
         case UnitType::Bug1:
             velocity_ = 60.0f + level*2.0f;
             health_   = 100 + level*20;
+            cost_ = 50;
             break;
         case UnitType::Bug2:
             velocity_ = 40.0f + level*2.0f;
             health_   = 200 + level*40;
+            cost_ = 70;
             break;
         case UnitType::Bug3:
             velocity_ = 47.0f + level*3.0f;
             health_   = 150 + level*30;
+            cost_ = 90;
             break;
         default:
             assert(false && "Invalid enemy type");

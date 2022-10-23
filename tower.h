@@ -152,7 +152,7 @@ struct Tower : Unit
         if(!target_enemy)
             return;
 
-        rotation_ = glm::sign(-(target_enemy->position_ - position_).y)*
+        rotation_ = glm::sign(-(target_enemy->Position() - position_).y)*
                 glm::degrees(glm::angle(glm::normalize(target_enemy->Position() - position_), glm::vec2{ 1.0f, 0.0f }));
 
         if(reloading_ <= 0.0f)

@@ -2,22 +2,22 @@
 
 #include "primitives.h"
 
-enum class UnitType
+enum class UnitType : int
 {
-    Bug1,
-    Bug2,
-    Bug3,
-    Gun,
-    Laser,
-    RocketGun,
-    Rocket,
-    LaserRay,
-    Shot,
-    Boom
+//  Enemies     Towers      Ammo        Other
+    Bug1,       Gun,        Shot,       Boom,
+    Bug2,       Laser,      LaserRay,
+    Bug3,       RocketGun,  Rocket
 };
 
-struct Unit
+class Unit
 {
+    friend class Render;
+public:
+    Unit(UnitType type, Point position, Degree rotation) noexcept;
+
+    virtual ~Unit();// = 0;
+protected:
     UnitType type_;
     Point    position_;
     Degree   rotation_;
