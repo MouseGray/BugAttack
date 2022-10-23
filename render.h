@@ -9,6 +9,8 @@
 
 #include "primitives.h"
 #include "unit.h"
+#include "OpenGL/program.h"
+#include "OpenGL/vertexarray.h"
 
 class Render
 {
@@ -28,8 +30,6 @@ class Render
 public:
     Render(std::size_t width, std::size_t height);
 
-    ~Render();
-
     void DrawTexture(GLuint texture_id, std::size_t x, std::size_t y, std::size_t w, std::size_t h, float a = 90.0f, float t = 1.0f);
 
     void DrawText(const std::string& text, std::size_t x, std::size_t y, const Color& color, float scale = 1.0f);
@@ -46,23 +46,17 @@ public:
 
     static GLuint CreateTexture(GLenum type, std::size_t w, std::size_t h, const GLchar* data);
 private:
-    void InitTexture();
-    void InitSimple();
     void InitText();
-
-    GLuint CreateProgram(const std::string& name);
-
-    GLuint LoadShader(const std::string& path, GLenum type);
 
     std::array<GLfloat, 24> GetVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h, GLfloat a);
 
-    GLuint texture_program_;
-    GLuint simple_program_;
-    GLuint text_program_;
+    opengl::Program texture_program_;
+    opengl::Program simple_program_;
+    opengl::Program text_program_;
 
-    GLuint texture_vbo, texture_vao;
-    GLuint simple_vbo, simple_vao;
-    GLuint text_vbo, text_vao;
+    opengl::VertexArray texture_vao;
+    opengl::VertexArray simple_vao;
+    opengl::VertexArray text_vao;
 
     std::unordered_map<char, Character> characters_;
 

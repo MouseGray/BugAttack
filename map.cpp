@@ -26,7 +26,7 @@ void Map::Update(float time)
     level_.Update(time);
 
     if(level_.IsNeedGenerate())
-        generate_enemies(level_.EnemyType());
+        GenerateEnemy(level_.EnemyType());
 
     for(auto&& a: enemies_)
     {
@@ -58,7 +58,7 @@ void Map::Update(float time)
     }), enemies_.end());
 }
 
-void Map::generate_enemies(UnitType t)
+void Map::GenerateEnemy(UnitType t)
 {
     auto [spawn_y, spawn_x] = field_.SpawnPoint();
 

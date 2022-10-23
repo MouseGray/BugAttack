@@ -24,7 +24,7 @@ public:
     void Update(float time);
 
 
-    void generate_enemies(UnitType);
+    void GenerateEnemy(UnitType);
 
     bool CanPut(const glm::vec2& pos, const glm::vec2& size) const noexcept;
 

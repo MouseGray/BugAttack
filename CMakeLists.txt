@@ -15,6 +15,8 @@ if(NOT DEFINED FREETYPE_LIB_DIR)
     message(FATAL_ERROR "FREETYPE_LIB_DIR not set")
 endif()
 
+add_subdirectory(OpenGL)
+
 add_executable(Game main.cpp
     unit.h unit.cpp
     enemy.h enemy.cpp
@@ -32,8 +34,11 @@ add_executable(Game main.cpp
 )
 
 target_include_directories(Game PRIVATE ${FREETYPE_INCLUDE_DIR})
+target_include_directories(Game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 target_link_libraries(Game PRIVATE -lGLEW -lglfw -lGL -lpthread -lX11 -lXrandr -lXi ${FREETYPE_LIB_DIR}/libfreetype.a)
+
+target_link_libraries(Game PRIVATE opengl)
 
 configure_file(${MAPS} ${MAPS} COPYONLY)
 
