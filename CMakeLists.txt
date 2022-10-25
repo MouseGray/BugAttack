@@ -20,15 +20,26 @@ add_subdirectory(OpenGL)
 add_executable(Game main.cpp
     unit.h unit.cpp
     enemy.h enemy.cpp
-    tower.h tower.cpp
     map.h map.cpp
     field.h field.cpp
     primitives.h primitives.cpp
     level.h level.cpp
     menu.h menu.cpp
     render.h render.cpp
+    geometry.h geometry.cpp
+
+    ammo/ammo.h ammo/ammo.cpp
+    ammo/shot.h ammo/shot.cpp
+    ammo/laserray.h ammo/laserray.cpp
+    ammo/rocket.h ammo/rocket.cpp
+
+    tower/gun.h tower/gun.cpp
+    tower/tower.h tower/tower.cpp
+    tower/laser.h tower/laser.cpp
+    tower/rocket.h tower/rocket.cpp
 
     application.h application.cpp
+    utils.h utils.cpp
 
     maps/default.map
 )

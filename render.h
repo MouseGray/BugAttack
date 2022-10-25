@@ -7,6 +7,9 @@
 
 #include <GL/glew.h>
 
+#include <tower/tower.h>
+
+#include "map.h"
 #include "primitives.h"
 #include "unit.h"
 #include "OpenGL/program.h"
@@ -30,7 +33,7 @@ class Render
 public:
     Render(std::size_t width, std::size_t height);
 
-    void DrawTexture(GLuint texture_id, std::size_t x, std::size_t y, std::size_t w, std::size_t h, float a = 90.0f, float t = 1.0f);
+    void DrawTexture(GLuint texture_id, std::size_t x, std::size_t y, std::size_t w, std::size_t h, float a = 0.0f, float t = 1.0f);
 
     void DrawText(const std::string& text, std::size_t x, std::size_t y, const Color& color, float scale = 1.0f);
 
@@ -62,3 +65,7 @@ private:
 
     std::unordered_map<UnitType, Unit> units_;
 };
+
+void Render(class Render& render, const tower::TowerBase& tower);
+
+void Render(class Render& render, const Map& map);

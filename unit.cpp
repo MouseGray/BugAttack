@@ -1,12 +1,17 @@
 #include "unit.h"
 
-Unit::Unit(UnitType type, Point position, Degree rotation) noexcept :
-    type_{type}, position_{position}, rotation_{rotation}
+Unit::Unit(UnitType type, class Geometry geometry) :
+    type_{type}, geometry_{geometry}
 {
 
 }
 
-Unit::~Unit()
+UnitType Unit::Type() const noexcept
 {
+    return type_;
+}
 
+const class Geometry& Unit::Geometry() const noexcept
+{
+    return geometry_;
 }

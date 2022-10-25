@@ -1,11 +1,15 @@
 #include "enemy.h"
 
 #include <cassert>
+#include <iostream>
+#include <ostream>
 
 #include "field.h"
+#include "utils.h"
+#include "geometry.h"
 
-Enemy::Enemy(UnitType type, Point pos, Degree angle, int level) :
-    Unit{ type, pos, angle }, id_{ Enemy::GetID() }
+Enemy::Enemy(UnitType type, class Geometry geometry, int level) :
+    Unit{ type, geometry }, in_end_{}
 {
     switch (type)
     {
@@ -29,7 +33,7 @@ Enemy::Enemy(UnitType type, Point pos, Degree angle, int level) :
     }
 }
 
-void Enemy::Move(const bugattack::Field& field, Time seconds)
+void Enemy::Move(const bugattack::Field& field, float seconds)
 {
     auto distance = velocity_*seconds;
 
@@ -38,60 +42,29 @@ void Enemy::Move(const bugattack::Field& field, Time seconds)
         if(in_end_)
             break;
 
-        float access_distance = glm::min(20.0f, distance);
+        auto direction = glm::round(utils::Direction(geometry_.rotation));
 
-        int dx = glm::round(glm::cos(glm::radians(rotation_)));
-        int dy = -glm::round(glm::sin(glm::radians(rotation_)));
+        auto position = glm::clamp(glm::round(geometry_.position / 20.0f - direction*0.49f), {0, 0}, {31, 31});
 
-        int x = glm::clamp<int>(glm::round(position_.x / 20.0f - dx*0.5f), 0, 31);
-        int y = glm::clamp<int>(glm::round(position_.y / 20.0f - dy*0.5f), 0, 31);
-
-        if(field[y + dy][x + dx] == bugattack::CellType::Path ||
-                field[y + dy][x + dx] == bugattack::CellType::End)
+        for(auto d : {direction,
+                      direction*glm::mat2x2{ 0,  1,
+                                            -1,  0},
+                      direction*glm::mat2x2{ 0, -1,
+                                             1,  0}})
         {
-            auto offset = glm::vec2{dx, dy}*access_distance;
-            distance -= offset.length();
-            position_ += offset;
-            if(field[y + dy][x + dx] == bugattack::CellType::End)
+            auto cell = field[position.y + d.y][position.x + d.x];
+            if(cell == bugattack::CellType::Path || cell == bugattack::CellType::End)
             {
-                in_end_ = true;
+                class Geometry cell_geometry = {glm::vec2{position.x + d.x, position.y + d.y}*20.0f, 0.0f};
+                auto access_distance = std::min(distance, Distance(geometry_, cell_geometry));
+                geometry_ = MoveTo(geometry_, cell_geometry, access_distance);
+                distance -= access_distance;
+                if(cell == bugattack::CellType::End)
+                {
+                    in_end_ = true;
+                }
+                break;
             }
-            continue;
-        }
-
-        rotation_ += 90.0f;
-
-        dx = glm::round(glm::cos(glm::radians(rotation_)));
-        dy = -glm::round(glm::sin(glm::radians(rotation_)));
-
-        if(field[y + dy][x + dx] == bugattack::CellType::Path ||
-                field[y + dy][x + dx] == bugattack::CellType::End)
-        {
-            auto offset = glm::vec2{dx, dy}*access_distance;
-            distance -= offset.length();
-            position_ += offset;
-            if(field[y + dy][x + dx] == bugattack::CellType::End &&
-                    (position_ - Point{(x + dx)*20.0f, (y + dy)*20.0f}).length() < 0.1f)
-                in_end_ = true;
-            continue;
-
-        }
-
-        rotation_ -= 180.0f;
-        dx = glm::round(glm::cos(glm::radians(rotation_)));
-        dy = -glm::round(glm::sin(glm::radians(rotation_)));
-
-        if(field[y + dy][x + dx] == bugattack::CellType::Path ||
-                field[y + dy][x + dx] == bugattack::CellType::End)
-        {
-            auto offset = glm::vec2{dx, dy}*access_distance;
-            distance -= offset.length();
-            position_ += offset;
-            if(field[y + dy][x + dx] == bugattack::CellType::End &&
-                    (position_ - Point{(x + dx)*20.0f, (y + dy)*20.0f}).length() < 0.1f)
-                in_end_ = true;
-            continue;
-
         }
     }
 }
@@ -109,10 +82,4 @@ bool Enemy::IsLive() const noexcept
 bool Enemy::InEnd() const noexcept
 {
     return in_end_;
-}
-
-ID Enemy::GetID() noexcept
-{
-    static ID id{};
-    return id++;
 }

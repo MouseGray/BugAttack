@@ -31,7 +31,7 @@ void Button::Render(class Render& render) const
 
     render.DrawRectangle(std_postion.x, std_postion.y, size_.x, size_.y, BorderColor());
     render.DrawRectangle(std_postion.x, std_postion.y, body_size.x, body_size.y, BODY_COLOR);
-    render.DrawTexture(texture_id_, std_postion.x, std_postion.y, body_size.x, body_size.y);
+    render.DrawTexture(texture_id_, std_postion.x, std_postion.y, body_size.x, body_size.y, 270.0f);
 }
 
 void Button::Disable() noexcept
@@ -98,7 +98,7 @@ void Menu::Render(class Render& render) const
 
 std::size_t Menu::Selected() const noexcept
 {
-    auto it =std::find_if(buttons_.begin(), buttons_.end(), [](auto&& btn)
+    auto it = std::find_if(buttons_.begin(), buttons_.end(), [](auto&& btn)
     {
         return btn.IsSelected();
     });

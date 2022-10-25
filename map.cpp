@@ -8,17 +8,20 @@
 #include <iostream>
 #include <algorithm>
 #include <numeric>
+#include <memory>
+#include <tower/gun.h>
+#include <tower/laser.h>
+#include <tower/rocket.h>
 
 #include "level.h"
-#include "render.h"
 
-Map::Map(GLuint texture_id, GLfloat x, GLfloat y, GLfloat w, GLfloat h) :
-    texture_id_{texture_id}, x_{x}, y_{y}, w_{w}, h_{h},
+Map::Map() :
+    Unit{UnitType::Map, {{310.0f, 310.0f}, 270.0f}},
     level_("levels/default.lvl")
 {
     health_ = 3;
     gold_ = 500;
-    field_.Load( "maps/default.map" );
+    field_.Load("maps/default.map");
 }
 
 void Map::Update(float time)
@@ -30,31 +33,31 @@ void Map::Update(float time)
 
     for(auto&& a: enemies_)
     {
-        a.Move(field_, time);
+        a->Move(field_, time);
     }
 
     for(auto&& a: towers_)
     {
-        a.Attack(enemies_.begin(), enemies_.end(), time);
+        a->Update(enemies_, time);
     }
 
     auto in_end = std::count_if(enemies_.begin(), enemies_.end(), [](const auto& r)
     {
-        return r.InEnd();
+        return r->InEnd();
     });
 
     health_ -= in_end;
 
-    gold_ = std::accumulate(enemies_.begin(), enemies_.end(), gold_, [](int sum, const Enemy& e)
+    gold_ = std::accumulate(enemies_.begin(), enemies_.end(), gold_, [](int sum, const auto& e)
     {
-        if(e.IsLive())
+        if(e->IsLive())
             return sum;
-        return sum + e.Cost();
+        return sum + e->Cost();
     });
 
-    enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), [](const auto& r)
+    enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), [](const auto& r) mutable
     {
-        return !r.IsLive() || r.InEnd();
+        return (!r->IsLive() || r->InEnd());
     }), enemies_.end());
 }
 
@@ -62,7 +65,9 @@ void Map::GenerateEnemy(UnitType t)
 {
     auto [spawn_y, spawn_x] = field_.SpawnPoint();
 
-    enemies_.push_back(Enemy{ t, Point{ spawn_x*20, spawn_y*20 }, 270.0f, 0 });
+    auto* enemy = new Enemy{t, ::Geometry{ { spawn_x*20, spawn_y*20 }, 90.0f }, static_cast<int>(level_.CurrentLevel())};
+
+    enemies_.push_back(std::shared_ptr<Enemy>(enemy));
 }
 
 bool Map::CanPut(const glm::vec2& pos, const glm::vec2& size) const noexcept
@@ -83,43 +88,28 @@ void Map::Put(UnitType type, size_t x, size_t y) noexcept
     if(!field_.CanPut(x, y))
         return;
 
+    switch (type) {
+        case UnitType::Gun:
+            if(gold_ < tower::Gun::COST)
+                return;
+            gold_ -= tower::Gun::COST;
+            towers_.push_back(std::make_unique<tower::Gun>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f}));
+            break;
+        case UnitType::Laser:
+            if(gold_ < tower::Laser::COST)
+                return;
+            gold_ -= tower::Laser::COST;
+            towers_.push_back(std::make_unique<tower::Laser>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f}));
+            break;
+        case UnitType::RocketGun:
+            if(gold_ < tower::RocketGun::COST)
+                return;
+            gold_ -= tower::RocketGun::COST;
+            towers_.push_back(std::make_unique<tower::RocketGun>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f}));
+            break;
+    }
+
     field_.Put(x, y);
-
-    towers_.push_back({ type, glm::vec2{ x*20.0f, y*20.0f }, 90.0f });
-}
-
-void Map::Render(class Render& render)
-{
-    auto std_position = glm::vec2{x_, y_} + 0.5f*glm::vec2{w_, h_};
-    render.DrawTexture(texture_id_, std_position.x, std_position.y, w_, h_);
-
-    for(auto&& enemy: enemies_)
-    {
-        render.DrawUnit(enemy);
-    }
-
-    for(auto&& tower: towers_)
-    {
-        tower.Render(render);
-    }
-
-    std::string level(9, '\0');
-    sprintf(level.data(), "Level: %2lu", level_.CurrentLevel());
-    render.DrawText(level, 640.0f, 440.0f, {0.5, 0.8f, 0.2f, 1.0f});
-
-
-    std::string Health(10, '\0');
-    sprintf(Health.data(), "Health: %2d", health_);
-    render.DrawText(Health, 640.0f, 410.0f, {0.5, 0.8f, 0.2f, 1.0f});
-
-
-    std::string Gold(10, '\0');
-    sprintf(Gold.data(), "Gold: %4d", gold_);
-    render.DrawText(Gold, 640.0f, 380.0f, {0.5, 0.8f, 0.2f, 1.0f});
-
-    std::string text(11, '\0');
-    sprintf(text.data(), "Wave: %5.2f", level_.TimeOffset());
-    render.DrawText(text, 640.0f, 350.0f, {0.5, 0.8f, 0.2f, 1.0f});
 }
 
 bool Map::IsWin() const noexcept
@@ -140,4 +130,34 @@ void Map::Restart()
     level_.Restart();
     health_ = 3;
     gold_ = 500;
+}
+
+const std::vector<std::shared_ptr<Enemy>>& Map::Enemies() const noexcept
+{
+    return enemies_;
+}
+
+const std::vector<std::unique_ptr<tower::TowerBase>>& Map::Towers() const noexcept
+{
+    return towers_;
+}
+
+int Map::Gold() const noexcept
+{
+    return gold_;
+}
+
+int Map::Health() const noexcept
+{
+    return health_;
+}
+
+int Map::Level() const noexcept
+{
+    return level_.CurrentLevel();
+}
+
+float Map::TimeOffset() const noexcept
+{
+    return level_.TimeOffset();
 }

@@ -6,23 +6,21 @@
 
 #include <GL/glew.h>
 
+#include <tower/tower.h>
+
 #include "field.h"
 #include "enemy.h"
-#include "tower.h"
 #include "level.h"
 
 class Render;
 
-class Map
+class Map : public Unit
 {
 
-
 public:
-    Map(GLuint texture_id, GLfloat x, GLfloat y, GLfloat w, GLfloat h);
-
+    Map();
 
     void Update(float time);
-
 
     void GenerateEnemy(UnitType);
 
@@ -30,26 +28,30 @@ public:
 
     void Put(UnitType type, size_t x, size_t y) noexcept;
 
-    void Render(class Render& render);
-
     bool IsWin() const noexcept;
 
     bool IsLost() const noexcept;
 
     void Restart();
-public:
-    GLuint texture_id_;
-    GLfloat x_;
-    GLfloat y_;
-    GLfloat w_;
-    GLfloat h_;
 
+    const std::vector<std::shared_ptr<Enemy>>& Enemies() const noexcept;
+
+    const std::vector<std::unique_ptr<tower::TowerBase>>& Towers() const noexcept;
+
+    int Gold() const noexcept;
+
+    int Health() const noexcept;
+
+    int Level() const noexcept;
+
+    float TimeOffset() const noexcept;
+public:
     int gold_;
     int health_;
 
-    std::list<Enemy> enemies_;
+    std::vector<std::shared_ptr<Enemy>> enemies_;
 
-    std::vector<Tower> towers_;
+    std::vector<std::unique_ptr<tower::TowerBase>> towers_;
 
     bugattack::Level level_;
 

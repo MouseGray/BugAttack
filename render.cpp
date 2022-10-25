@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/vector_angle.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/glm.hpp>
 
@@ -12,6 +13,10 @@
 #include FT_FREETYPE_H
 
 #include <OpenGL/shader.h>
+
+#include <tower/gun.h>
+#include <tower/laser.h>
+#include <tower/rocket.h>
 
 #include "unit.h"
 
@@ -152,9 +157,9 @@ void Render::DrawLine(std::size_t x0, std::size_t y0, std::size_t x1, std::size_
 
 void Render::DrawUnit(const ::Unit &unit, GLfloat scale)
 {
-    const auto& unit_ = units_.at(unit.type_);
+    const auto& unit_ = units_.at(unit.Type());
 
-    DrawTexture(unit_.texture_id_, unit.position_.x, unit.position_.y, unit_.width_*scale, unit_.height_*scale, unit.rotation_);
+    DrawTexture(unit_.texture_id_, unit.Geometry().position.x, unit.Geometry().position.y, unit_.width_*scale, unit_.height_*scale, unit.Geometry().rotation);
 }
 
 void Render::AddUnitTexture(GLuint texture_id, UnitType type, GLfloat w, GLfloat h)
@@ -229,21 +234,115 @@ void Render::InitText()
 
 std::array<GLfloat, 24> Render::GetVertices(GLfloat x, GLfloat y, GLfloat w, GLfloat h, GLfloat a)
 {
-    glm::mat4 mat{ 1.0f };
-    mat = glm::rotate(mat, -glm::radians(a - 90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-    auto lt = mat*glm::vec4(-0.5*w, +0.5f*h, 0.0f, 0.0f) + glm::vec4(x, y, 0.0f, 0.0f);
-    auto lb = mat*glm::vec4(-0.5*w, -0.5f*h, 0.0f, 0.0f) + glm::vec4(x, y, 0.0f, 0.0f);
-    auto rb = mat*glm::vec4(+0.5*w, -0.5f*h, 0.0f, 0.0f) + glm::vec4(x, y, 0.0f, 0.0f);
-    auto rt = mat*glm::vec4(+0.5*w, +0.5f*h, 0.0f, 0.0f) + glm::vec4(x, y, 0.0f, 0.0f);
+    auto lt = glm::rotate(glm::vec2{-0.5*w, +0.5f*h}, glm::radians(a)) + glm::vec2(x, y);
+    auto lb = glm::rotate(glm::vec2{-0.5*w, -0.5f*h}, glm::radians(a)) + glm::vec2(x, y);
+    auto rb = glm::rotate(glm::vec2{+0.5*w, -0.5f*h}, glm::radians(a)) + glm::vec2(x, y);
+    auto rt = glm::rotate(glm::vec2{+0.5*w, +0.5f*h}, glm::radians(a)) + glm::vec2(x, y);
 
     return {
-        lt.x, lt.y, 0.0f, 1.0f,
-        lb.x, lb.y, 0.0f, 0.0f,
-        rb.x, rb.y, 1.0f, 0.0f,
+        lt.x, lt.y, 1.0f, 1.0f,
+        lb.x, lb.y, 0.0f, 1.0f,
+        rb.x, rb.y, 0.0f, 0.0f,
 
-        lt.x, lt.y, 0.0f, 1.0f,
-        rb.x, rb.y, 1.0f, 0.0f,
-        rt.x, rt.y, 1.0f, 1.0f
+        lt.x, lt.y, 1.0f, 1.0f,
+        rb.x, rb.y, 0.0f, 0.0f,
+        rt.x, rt.y, 1.0f, 0.0f
     };
+}
+
+void Render(class Render& render, const ammo::Shot& shot)
+{
+    render.DrawUnit(shot);
+}
+
+void Render(class Render& render, const ammo::LaserRay& ray)
+{
+    render.DrawLine(ray.Geometry().position.x,
+                    ray.Geometry().position.y,
+                    ray.Enemy()->Geometry().position.x,
+                    ray.Enemy()->Geometry().position.y,
+                    Color{1.0, 0.0, 0.0, 0.7f});
+}
+
+void Render(class Render& render, const ammo::Rocket& rocket)
+{
+    if(rocket.Type() == UnitType::Boom)
+        render.DrawUnit(rocket, std::min(rocket.BoomTime(), rocket.MaxBoomTime())*30.0f);
+    else
+        render.DrawUnit(rocket);
+}
+
+void Render(class Render& render, const tower::Gun& gun)
+{
+    for(auto&& ammo: gun)
+        Render(render, ammo);
+
+    render.DrawUnit(gun);
+}
+
+void Render(class Render& render, const tower::Laser& laser)
+{
+    const auto& ray = laser.Ray();
+    if(ray)
+        Render(render, *ray);
+
+    render.DrawUnit(laser);
+}
+
+void Render(class Render& render, const tower::RocketGun& rocket_gun)
+{
+    for(auto&& ammo: rocket_gun)
+        Render(render, ammo);
+
+    render.DrawUnit(rocket_gun);
+}
+
+void Render(class Render& render, const tower::TowerBase& tower)
+{
+    switch (tower.Type())
+    {
+        case UnitType::Gun:
+            Render(render, static_cast<const tower::Gun&>(tower));
+            break;
+        case UnitType::Laser:
+            Render(render, static_cast<const tower::Laser&>(tower));
+            break;
+        case UnitType::RocketGun:
+            Render(render, static_cast<const tower::RocketGun&>(tower));
+            break;
+        default:
+            assert(false && "Invalid tower type");
+    }
+}
+
+void Render(class Render& render, const Map& map)
+{
+    render.DrawUnit(map);
+
+    for(auto&& enemy: map.Enemies())
+    {
+        render.DrawUnit(*enemy);
+    }
+
+    for(auto&& tower: map.Towers())
+    {
+        ::Render(render, *tower);
+    }
+
+    std::string level(9, '\0');
+    sprintf(level.data(), "Level: %2d", map.Level());
+    render.DrawText(level, 640.0f, 440.0f, {0.5, 0.8f, 0.2f, 1.0f});
+
+    std::string Health(10, '\0');
+    sprintf(Health.data(), "Health: %2d", map.Health());
+    render.DrawText(Health, 640.0f, 410.0f, {0.5, 0.8f, 0.2f, 1.0f});
+
+
+    std::string Gold(10, '\0');
+    sprintf(Gold.data(), "Gold: %4d", map.Gold());
+    render.DrawText(Gold, 640.0f, 380.0f, {0.5, 0.8f, 0.2f, 1.0f});
+
+    std::string text(11, '\0');
+    sprintf(text.data(), "Wave: %5.2f", map.TimeOffset());
+    render.DrawText(text, 640.0f, 350.0f, {0.5, 0.8f, 0.2f, 1.0f});
 }

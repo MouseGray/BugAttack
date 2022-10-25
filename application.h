@@ -33,6 +33,6 @@ public:
     GLFWwindow* window_;
 
     Menu menu_;
-    std::unique_ptr<Render> render_;
+    std::unique_ptr<class Render> render_;
     std::unique_ptr<Map> map_;
 };

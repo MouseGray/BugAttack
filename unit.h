@@ -1,24 +1,42 @@
 #pragma once
 
-#include "primitives.h"
+#include "geometry.h"
 
 enum class UnitType : int
 {
 //  Enemies     Towers      Ammo        Other
     Bug1,       Gun,        Shot,       Boom,
-    Bug2,       Laser,      LaserRay,
+    Bug2,       Laser,      LaserRay,   Map,
     Bug3,       RocketGun,  Rocket
 };
 
 class Unit
 {
-    friend class Render;
 public:
-    Unit(UnitType type, Point position, Degree rotation) noexcept;
+    Unit(UnitType type, Geometry geometry);
 
-    virtual ~Unit();// = 0;
+    virtual ~Unit() = default;
+
+    UnitType Type() const noexcept;
+
+    const class Geometry& Geometry() const noexcept;
 protected:
     UnitType type_;
-    Point    position_;
-    Degree   rotation_;
+    class Geometry geometry_;
+};
+
+struct IDestroyable
+{
+    IDestroyable() = default;
+    virtual ~IDestroyable() = default;
+
+    virtual bool IsDestroyed() const = 0;
+};
+
+struct IsDestroyed
+{
+    bool operator()(const IDestroyable& object)
+    {
+        return object.IsDestroyed();
+    }
 };
