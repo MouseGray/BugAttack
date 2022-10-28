@@ -13,14 +13,9 @@ VertexBuffer::~VertexBuffer()
     glDeleteBuffers(1, &handle_);
 }
 
-VertexBuffer::Using VertexBuffer::Use() noexcept
-{
-    return Using{handle_};
-}
-
 void VertexBuffer::SetData(GLfloat *data, std::size_t size)
 {
-    auto _ = Use();
+    USE(VertexBuffer, *this);
     glBufferSubData(GL_ARRAY_BUFFER, 0, size * sizeof(GLfloat), data);
 }
 

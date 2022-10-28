@@ -15,14 +15,9 @@ Program::~Program()
     glDeleteProgram(handle_);
 }
 
-Program::Using Program::Use() noexcept
-{
-    return Using{handle_};
-}
-
 void Program::SetParam(std::string_view name, GLint v)
 {
-    auto _ = Use();
+    USE(Program, *this);
 
     auto location = glGetUniformLocation(handle_, name.data());
 
@@ -34,7 +29,7 @@ void Program::SetParam(std::string_view name, GLint v)
 
 void Program::SetParam(std::string_view name, GLfloat v)
 {
-    auto _ = Use();
+    USE(Program, *this);
 
     auto location = glGetUniformLocation(handle_, name.data());
 
@@ -46,7 +41,7 @@ void Program::SetParam(std::string_view name, GLfloat v)
 
 void Program::SetParam(std::string_view name, GLfloat v1, GLfloat v2, GLfloat v3)
 {
-    auto _ = Use();
+    USE(Program, *this);
 
     auto location = glGetUniformLocation(handle_, name.data());
 
@@ -58,7 +53,7 @@ void Program::SetParam(std::string_view name, GLfloat v1, GLfloat v2, GLfloat v3
 
 void Program::SetParam(std::string_view name, GLfloat v1, GLfloat v2, GLfloat v3, GLfloat v4)
 {
-    auto _ = Use();
+    USE(Program, *this);
 
     auto location = glGetUniformLocation(handle_, name.data());
 
@@ -70,7 +65,7 @@ void Program::SetParam(std::string_view name, GLfloat v1, GLfloat v2, GLfloat v3
 
 void Program::SetParam(std::string_view name, const GLfloat* v)
 {
-    auto _ = Use();
+    USE(Program, *this);
 
     auto location = glGetUniformLocation(handle_, name.data());
 

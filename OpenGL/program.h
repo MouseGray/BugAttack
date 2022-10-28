@@ -1,5 +1,6 @@
 #pragma once
 
+#include "opengl.h"
 #include "shader.h"
 
 namespace opengl
@@ -7,19 +8,10 @@ namespace opengl
 
 class Program : public OpenGLObject
 {
-    struct Using
-    {
-        Using(GLuint handle) { glUseProgram(handle); }
-        ~Using() { glUseProgram(0); }
-    };
-
 public:
     Program(const Shader& vertex_shader, const Shader& fragment_shader);
 
     ~Program();
-
-    [[nodiscard]]
-    Using Use() noexcept;
 
     void SetParam(std::string_view name, GLint v);
 
@@ -33,6 +25,13 @@ public:
 
 private:
     GLuint CreateProgram(const Shader& vertex_shader, const Shader& fragment_shader);
+};
+
+struct UseProgram : Using
+{
+    UseProgram(const Program& program) { glUseProgram(program); }
+
+    ~UseProgram() { glUseProgram(0); }
 };
 
 }

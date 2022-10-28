@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 
-project(Game LANGUAGES CXX)
+project(BugAttack LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,39 +17,7 @@ endif()
 
 add_subdirectory(OpenGL)
 
-add_executable(Game main.cpp
-    unit.h unit.cpp
-    enemy.h enemy.cpp
-    map.h map.cpp
-    field.h field.cpp
-    primitives.h primitives.cpp
-    level.h level.cpp
-    menu.h menu.cpp
-    render.h render.cpp
-    geometry.h geometry.cpp
-
-    ammo/ammo.h ammo/ammo.cpp
-    ammo/shot.h ammo/shot.cpp
-    ammo/laserray.h ammo/laserray.cpp
-    ammo/rocket.h ammo/rocket.cpp
-
-    tower/gun.h tower/gun.cpp
-    tower/tower.h tower/tower.cpp
-    tower/laser.h tower/laser.cpp
-    tower/rocket.h tower/rocket.cpp
-
-    application.h application.cpp
-    utils.h utils.cpp
-
-    maps/default.map
-)
-
-target_include_directories(Game PRIVATE ${FREETYPE_INCLUDE_DIR})
-target_include_directories(Game PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-
-target_link_libraries(Game PRIVATE -lGLEW -lglfw -lGL -lpthread -lX11 -lXrandr -lXi ${FREETYPE_LIB_DIR}/libfreetype.a)
-
-target_link_libraries(Game PRIVATE opengl)
+add_subdirectory(Game)
 
 configure_file(${MAPS} ${MAPS} COPYONLY)
 

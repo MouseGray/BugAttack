@@ -14,11 +14,6 @@ VertexArray::~VertexArray()
     glDeleteVertexArrays(1, &handle_);
 }
 
-VertexArray::Using VertexArray::Use() noexcept
-{
-    return Using{handle_};
-}
-
 GLuint VertexArray::CreateVertexArray(std::size_t offset)
 {
     GLuint vertex_array;
@@ -37,7 +32,7 @@ GLuint VertexArray::CreateVertexArray(std::size_t offset)
 
 void VertexArray::SetDataImpl(GLfloat *data, std::size_t size)
 {
-    auto _ = Use();
+    USE(VertexArray, *this);
     buffer_.SetData(data, size);
 }
 

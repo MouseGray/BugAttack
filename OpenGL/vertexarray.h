@@ -1,5 +1,6 @@
 #pragma once
 
+#include "opengl.h"
 #include "vertexbuffer.h"
 
 namespace opengl
@@ -7,19 +8,10 @@ namespace opengl
 
 class VertexArray : public OpenGLObject
 {
-    struct Using
-    {
-        Using(GLuint handle) { glBindVertexArray(handle); }
-        ~Using() { glBindVertexArray(0); };
-    };
-
 public:
     VertexArray(std::size_t size, std::size_t offset);
 
     ~VertexArray();
-
-    [[nodiscard]]
-    Using Use() noexcept;
 
     template<std::size_t Size>
     void SetData(std::array<GLfloat, Size> data)
@@ -32,6 +24,13 @@ private:
     void SetDataImpl(GLfloat* data, std::size_t size);
 
     VertexBuffer buffer_;
+};
+
+struct UseVertexArray : Using
+{
+    UseVertexArray(const VertexArray& vertex_array) { glBindVertexArray(vertex_array); }
+
+    ~UseVertexArray() { glBindVertexArray(0); }
 };
 
 }
