@@ -1,3 +1,3 @@
 #pragma once
 
-#define PURE
+#define PURE __attribute__((const))
