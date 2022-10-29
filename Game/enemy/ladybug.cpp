@@ -10,4 +10,14 @@ Ladybug::Ladybug(class Geometry geometry, int level) :
     health_ = Health<Ladybug>(level);
 }
 
+std::shared_ptr<Enemy> Ladybug::Share() const
+{
+    return const_cast<Ladybug&>(*this).shared_from_this();
+}
+
+int Cost(const Ladybug& ladybug) noexcept
+{
+    return ladybug.IsDestroyed() ? 100 : 0;
+}
+
 }

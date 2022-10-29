@@ -18,14 +18,14 @@ class Unit
 public:
     Unit(UnitType type, Geometry geometry);
 
-    virtual ~Unit() = default;
-
     UnitType Type() const noexcept;
 
     const class Geometry& Geometry() const noexcept;
 
     void SetGeometry(class Geometry geometry) noexcept;
 protected:
+    virtual ~Unit() = default;
+
     UnitType type_;
     class Geometry geometry_;
 };

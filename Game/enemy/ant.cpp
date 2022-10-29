@@ -10,4 +10,14 @@ Ant::Ant(class Geometry geometry, int level) :
     health_ = Health<Ant>(level);
 }
 
+std::shared_ptr<Enemy> Ant::Share() const
+{
+    return const_cast<Ant&>(*this).shared_from_this();
+}
+
+int Cost(const Ant& ant) noexcept
+{
+    return ant.IsDestroyed() ? 30 : 0;
+}
+
 }

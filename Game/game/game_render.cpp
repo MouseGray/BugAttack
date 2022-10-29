@@ -28,8 +28,8 @@ void Render(class Render& render, const bugattack::ammo::LaserRay& ray)
 {
     render.DrawLine(ray.Geometry().position.x,
                     ray.Geometry().position.y,
-                    ray.Target()->Geometry().position.x,
-                    ray.Target()->Geometry().position.y,
+                    ray.Target().Geometry().position.x,
+                    ray.Target().Geometry().position.y,
                     glm::vec4{1.0, 0.0, 0.0, 0.7f});
 }
 

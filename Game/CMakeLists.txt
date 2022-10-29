@@ -7,6 +7,8 @@ add_executable(game
     game/level.h game/level.cpp
     game/render.h game/render.cpp
     game/game_render.h game/game_render.cpp
+    game/game_tower.h game/game_tower.cpp
+    game/game_enemy.h game/game_enemy.cpp
 
     application/application.h application/application.cpp
     application/menu.h application/menu.cpp

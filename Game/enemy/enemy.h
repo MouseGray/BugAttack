@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <numeric>
+#include <memory>
 
 #include <unit/unit.h>
 
@@ -10,7 +11,7 @@ namespace bugattack::field{class Field;}
 namespace bugattack::enemy
 {
 
-class Enemy : public Unit, public IDestroyable
+class Enemy : public Unit, public IDestroyable, public std::enable_shared_from_this<Enemy>
 {
 public:
     Enemy(UnitType type, class Geometry geometry, int level);
@@ -20,7 +21,11 @@ public:
     void Damage(float damage) noexcept;
 
     bool IsDestroyed() const;
+
+    virtual std::shared_ptr<Enemy> Share() const = 0;
 protected:
+    virtual ~Enemy() = default;
+
     float velocity_;
     float health_;
 };
@@ -39,24 +44,6 @@ float Health(int level)
     return E::BASE_HEALTH + level*E::COEF_HEALTH;
 }
 
-int Cost(const Enemy& enemy) noexcept;
-
-template<typename IIt>
-int Cost(IIt begin, IIt end)
-{
-    return std::accumulate(begin, end, 0, [](int sum, auto&& obj){
-        return sum + enemy::Cost(*obj);
-    });
-}
-
 bool InEnd(const field::Field& field, const Enemy& enemy);
-
-template<typename IIt>
-int InEnd(IIt begin, IIt end, const field::Field& field)
-{
-    return std::count_if(begin, end, [&field](auto&& obj){
-        return enemy::InEnd(field, *obj);
-    });
-}
 
 }

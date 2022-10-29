@@ -7,17 +7,23 @@ namespace bugattack::ammo
 
 class LaserRay : public AmmoBase
 {
-    static constexpr uint32_t DAMAGE        = 50;
-    static constexpr float    SPEED         = 0.0f;
-    static constexpr float    MAX_WORK_TIME = 1.0f;
+    static constexpr auto DAMAGE        = 50;
+    static constexpr auto VELOCITY      = 0.0f;
+    static constexpr auto MAX_WORK_TIME = 1.0f;
 public:
     LaserRay(class Geometry geometry, std::shared_ptr<enemy::Enemy> target);
 
-    void Update(float time) override;
+    void AddWorkTime(float time) noexcept;
+
+    float Damage() const override;
+
+    float Velocity() const override;
 
     bool IsDestroyed() const override;
 private:
     float work_time_;
 };
+
+void Update(LaserRay& ray, float time) noexcept;
 
 }

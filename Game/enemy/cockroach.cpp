@@ -10,4 +10,14 @@ Cockroach::Cockroach(class Geometry geometry, int level) :
     health_ = Health<Cockroach>(level);
 }
 
+std::shared_ptr<Enemy> Cockroach::Share() const
+{
+    return const_cast<Cockroach&>(*this).shared_from_this();
+}
+
+int Cost(const Cockroach& cockroach) noexcept
+{
+    return cockroach.IsDestroyed() ? 60 : 0;
+}
+
 }

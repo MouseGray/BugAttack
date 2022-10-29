@@ -6,23 +6,38 @@ namespace bugattack::ammo
 {
 
 LaserRay::LaserRay(class Geometry geometry, std::shared_ptr<enemy::Enemy> target) :
-    AmmoBase{UnitType::LaserRay, geometry, target}, work_time_{}
+    AmmoBase{UnitType::LaserRay, std::move(geometry), target}, work_time_{}
 {
 
 }
 
-void LaserRay::Update(float time)
+void LaserRay::AddWorkTime(float time) noexcept
 {
-    geometry_ = MoveTo(geometry_, target_->Geometry(), SPEED*time);
-
-    target_->Damage(DAMAGE*time);
-
     work_time_ += time;
+}
+
+float LaserRay::Damage() const
+{
+    return DAMAGE;
+}
+
+float LaserRay::Velocity() const
+{
+    return VELOCITY;
 }
 
 bool LaserRay::IsDestroyed() const
 {
     return work_time_ > MAX_WORK_TIME;
+}
+
+void Update(LaserRay& ray, float time) noexcept
+{
+    ray.SetGeometry(MoveTo(ray.Geometry(), ray.Target().Geometry(), ray.Velocity()*time));
+
+    ray.Target().Damage(ray.Damage()*time);
+
+    ray.AddWorkTime(time);
 }
 
 }

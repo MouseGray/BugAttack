@@ -6,24 +6,34 @@ namespace bugattack::ammo
 {
 
 Shot::Shot(class Geometry geometry, std::shared_ptr<enemy::Enemy> target) :
-    AmmoBase{UnitType::Shot, geometry, target}
+    AmmoBase{UnitType::Shot, std::move(geometry), target}
 {
 
 }
 
-void Shot::Update(float time)
+float Shot::Damage() const
 {
-    geometry_ = MoveTo(geometry_, target_->Geometry(), SPEED*time);
+    return DAMAGE;
+}
 
-    if(Distance(target_->Geometry(), geometry_) < DAMAGE_DISTANCE)
-    {
-        target_->Damage(DAMAGE);
-    }
+float Shot::Velocity() const
+{
+    return VELOCITY;
 }
 
 bool Shot::IsDestroyed() const
 {
     return Distance(geometry_, target_->Geometry()) < DAMAGE_DISTANCE;
+}
+
+void Update(Shot& shot, float time) noexcept
+{
+    shot.SetGeometry(MoveTo(shot.Geometry(), shot.Target().Geometry(), shot.Velocity()*time));
+
+    if(Distance(shot.Target().Geometry(), shot.Geometry()) < Shot::DAMAGE_DISTANCE)
+    {
+        shot.Target().Damage(shot.Damage());
+    }
 }
 
 }

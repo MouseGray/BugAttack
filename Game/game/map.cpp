@@ -1,6 +1,7 @@
 #include "map.h"
 
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 #include <memory>
 #include <iterator>
@@ -33,17 +34,19 @@ void Map::Update(float time)
         GenerateEnemy(level_.EnemyType());
 
     for(auto&& enemy: enemies_)
-        enemy::Update(*enemy, field_, time);
+        bugattack::Update(enemy, field_, time);
 
     for(auto&& tower: towers_)
-        tower->Update(enemies_, time);
+        bugattack::Update(tower, begin_enemy(), end_enemy(), time);
 
-    health_ -= enemy::InEnd(enemies_.begin(), enemies_.end(), field_);
-
-    gold_ += enemy::Cost(enemies_.begin(), enemies_.end());
+    for(auto&& enemy: enemies_)
+    {
+        health_ -= bugattack::InEnd(enemy, field_);
+        gold_   += bugattack::Cost(enemy);
+    }
 
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(), [this](auto&& enemy){
-        return enemy->IsDestroyed() || enemy::InEnd(field_, *enemy);
+        return enemy->IsDestroyed() || bugattack::InEnd(enemy, field_);
     }), enemies_.end());
 }
 
@@ -98,16 +101,6 @@ void Map::Restart()
     level_.Restart();
 }
 
-const std::vector<std::shared_ptr<enemy::Enemy>>& Map::Enemies() const noexcept
-{
-    return enemies_;
-}
-
-const std::vector<std::unique_ptr<tower::TowerBase>>& Map::Towers() const noexcept
-{
-    return towers_;
-}
-
 Map::EnemyIterator Map::begin_enemy() const noexcept
 {
     return {enemies_.begin()};
@@ -148,31 +141,31 @@ float Map::TimeOffset() const noexcept
     return level_.TimeOffset();
 }
 
-std::shared_ptr<enemy::Enemy> CreateEnemy(UnitType type, std::size_t x, std::size_t y, int level)
+GameEnemy CreateEnemy(UnitType type, std::size_t x, std::size_t y, int level)
 {
     switch (type)
     {
         case UnitType::Bug1:
-            return std::make_shared<enemy::Ant>(::Geometry{{ x*20, y*20 }, 90.0f}, level);
+            return enemy::Ant{::Geometry{{ x*20, y*20 }, 90.0f}, level};
         case UnitType::Bug2:
-            return std::make_shared<enemy::Ladybug>(::Geometry{{ x*20, y*20 }, 90.0f }, level);
+            return enemy::Ladybug{::Geometry{{ x*20, y*20 }, 90.0f }, level};
         case UnitType::Bug3:
-            return std::make_shared<enemy::Cockroach>(::Geometry{{ x*20, y*20 }, 90.0f }, level);
+            return enemy::Cockroach{::Geometry{{ x*20, y*20 }, 90.0f }, level};
         default:
             assert(false && "Invalid enemy type");
     }
 }
 
-std::unique_ptr<tower::TowerBase> CreateTower(UnitType type, std::size_t x, std::size_t y)
+GameTower CreateTower(UnitType type, std::size_t x, std::size_t y)
 {
     switch (type)
     {
         case UnitType::Gun:
-            return std::make_unique<tower::Gun>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f});
+            return tower::Gun{::Geometry{{ x*20.0f, y*20.0f }, 270.0f}};
         case UnitType::Laser:
-            return std::make_unique<tower::Laser>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f});
+            return tower::Laser{::Geometry{{ x*20.0f, y*20.0f }, 270.0f}};
         case UnitType::RocketGun:
-            return std::make_unique<tower::RocketGun>(::Geometry{{ x*20.0f, y*20.0f }, 270.0f});
+            return tower::RocketGun{::Geometry{{ x*20.0f, y*20.0f }, 270.0f}};
         default:
             assert(false && "Invalid tower type");
     }

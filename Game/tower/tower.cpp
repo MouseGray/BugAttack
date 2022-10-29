@@ -4,9 +4,26 @@ namespace bugattack::tower
 {
 
 TowerBase::TowerBase(UnitType type, class Geometry geometry) :
-    Unit{type, geometry}, reloading_{}
+    Unit{type, std::move(geometry)}, reloading_{}
 {
 
+}
+
+void TowerBase::Reload(float time) noexcept
+{
+    if(reloading_ > 0.0f)
+        reloading_ -= time;
+}
+
+bool TowerBase::Shoot(std::shared_ptr<enemy::Enemy> target) noexcept
+{
+    (void)target;
+
+    if(reloading_ > 0.0f)
+        return false;
+
+    reloading_ = MaxRealodTime();
+    return true;
 }
 
 int Cost(UnitType type) noexcept

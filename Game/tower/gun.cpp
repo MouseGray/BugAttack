@@ -2,57 +2,47 @@
 
 #include <algorithm>
 
-#include <enemy/enemy.h>
-
 namespace bugattack::tower
 {
 
 Gun::Gun(class Geometry geometry) :
-    TowerBase{UnitType::Gun, geometry}
+    TowerBase{UnitType::Gun, std::move(geometry)}
 {
 
 }
 
-void Gun::Update(const std::vector<std::shared_ptr<enemy::Enemy>>& enemies, float time)
+bool Gun::Shoot(std::shared_ptr<enemy::Enemy> target) noexcept
 {
-    reloading_ -= time;
+    if(!TowerBase::Shoot(target))
+        return false;
 
-    auto update_shot = [time](ammo::Shot& shot) -> void {
-        shot.Update(time);
-    };
+    ammo_.emplace_back(geometry_, std::move(target));
+    return true;
+}
 
-    std::for_each(ammo_.begin(), ammo_.end(), update_shot);
-
+void Gun::ValidateAmmo() noexcept
+{
     ammo_.erase(std::remove_if(ammo_.begin(), ammo_.end(), IsDestroyed{}), ammo_.end());
-
-    auto min_distance = RADIUS;
-    std::shared_ptr<enemy::Enemy> target_enemy = nullptr;
-
-    for(auto&& enemy: enemies)
-    {
-        auto distance = Distance(geometry_, enemy->Geometry());
-        if(distance < min_distance)
-        {
-            min_distance = distance;
-            target_enemy = enemy;
-        }
-    }
-
-    if(!target_enemy)
-        return;
-
-    geometry_ = LookAt(geometry_, target_enemy->Geometry());
-
-    if(reloading_ <= 0.0f)
-    {
-        ammo_.emplace_back(geometry_, std::move(target_enemy));
-        reloading_ = MAX_RELOAD;
-    }
 }
 
 float Gun::Radius() const
 {
     return RADIUS;
+}
+
+float Gun::MaxRealodTime() const
+{
+    return MAX_RELOAD;
+}
+
+std::vector<ammo::Shot>::iterator Gun::begin() noexcept
+{
+    return ammo_.begin();
+}
+
+std::vector<ammo::Shot>::iterator Gun::end() noexcept
+{
+    return ammo_.end();
 }
 
 std::vector<ammo::Shot>::const_iterator Gun::begin() const noexcept

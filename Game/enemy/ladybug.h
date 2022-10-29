@@ -5,7 +5,7 @@
 namespace bugattack::enemy
 {
 
-class Ladybug : public Enemy
+class Ladybug final : public Enemy
 {
 public:
     static constexpr auto BASE_VELOCITY = 40.0f;
@@ -14,6 +14,10 @@ public:
     static constexpr auto COEF_HEALTH   = 40;
 
     Ladybug(class Geometry geometry, int level);
+
+    std::shared_ptr<Enemy> Share() const override;
 };
+
+int Cost(const Ladybug& ladybug) noexcept;
 
 }

@@ -2,6 +2,7 @@
 
 #include <field/field.h>
 #include <field/field_utils.h>
+#include <iostream>
 #include <utils/utils.h>
 
 namespace bugattack::enemy
@@ -33,25 +34,6 @@ void Update(Enemy& enemy, const field::Field& field, float seconds)
     auto distance = enemy.Velocity()*seconds;
 
     enemy.SetGeometry(field::Move(field, enemy.Geometry(), distance));
-}
-
-int Cost(const Enemy &enemy) noexcept
-{
-    if(!enemy.IsDestroyed())
-        return 0;
-
-    switch (enemy.Type())
-    {
-    case UnitType::Bug1:
-        return 30;
-    case UnitType::Bug2:
-        return 60;
-    case UnitType::Bug3:
-        return 100;
-    default:
-        assert(false && "Invalid enemy type");
-    }
-    return 0;
 }
 
 bool InEnd(const field::Field& field, const Enemy& enemy)

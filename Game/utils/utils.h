@@ -29,50 +29,58 @@ std::string Format(std::string_view format, std::string::size_type length, Args&
     return result;
 }
 
+template<typename Ty>
+struct DereferenceValue
+{
+    using value_type = std::remove_reference_t<decltype(*std::declval<Ty>())>;
+};
+
 template<typename It>
-struct DereferenceIterator
+struct DereferenceIteratorConst
 {
     using iterator_category = std::input_iterator_tag;
-    using value_type = typename std::iterator_traits<It>::value_type::element_type;
+    using value_type = typename DereferenceValue<typename std::iterator_traits<It>::value_type>::value_type;
     using reference = value_type&;
+    using const_reference = std::add_const_t<reference>;
     using pointer = value_type*;
+    using const_pointer = std::add_const_t<pointer>;
     using difference_type = typename std::iterator_traits<It>::difference_type;
 
-    DereferenceIterator(It it) :
+    DereferenceIteratorConst(It it) :
         it_{std::move(it)}
     {
 
     }
 
-    bool operator==(const DereferenceIterator<It>& it) const noexcept
+    bool operator==(const DereferenceIteratorConst<It>& it) const noexcept
     {
         return it_ == it.it_;
     }
 
-    bool operator!=(const DereferenceIterator<It>& it) const noexcept
+    bool operator!=(const DereferenceIteratorConst<It>& it) const noexcept
     {
         return it_ != it.it_;
     }
 
-    reference operator*()
+    const_reference operator*()
     {
         return **it_;
     }
 
-    pointer operator->()
+    const_pointer operator->()
     {
         return std::addressof(**it_);
     }
 
-    DereferenceIterator<It>& operator++()
+    DereferenceIteratorConst<It>& operator++()
     {
         ++it_;
         return *this;
     }
 
-    DereferenceIterator<It> operator++(int)
+    DereferenceIteratorConst<It> operator++(int)
     {
-        DereferenceIterator<It> tmp{*this};
+        DereferenceIteratorConst<It> tmp{*this};
         ++(*this);
         return tmp;
     }

@@ -14,12 +14,14 @@ class AmmoBase : public Unit, public IDestroyable
 public:
     AmmoBase(UnitType type, class Geometry geometry, std::shared_ptr<enemy::Enemy> target);
 
-    virtual void Update(float time) = 0;
+    enemy::Enemy& Target() const noexcept;
 
-    std::shared_ptr<enemy::Enemy> Target() const noexcept;
+    virtual float Damage() const = 0;
 
-    virtual ~AmmoBase() = default;
+    virtual float Velocity() const = 0;
 protected:
+    virtual ~AmmoBase() = default;
+
     std::shared_ptr<enemy::Enemy> target_;
 };
 

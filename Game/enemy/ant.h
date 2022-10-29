@@ -5,7 +5,7 @@
 namespace bugattack::enemy
 {
 
-class Ant : public Enemy
+class Ant final : public Enemy
 {
 public:
     static constexpr auto BASE_VELOCITY = 60.0f;
@@ -14,6 +14,10 @@ public:
     static constexpr auto COEF_HEALTH   = 20;
 
     Ant(class Geometry geometry, int level);
+
+    std::shared_ptr<Enemy> Share() const override;
 };
+
+int Cost(const Ant& ant) noexcept;
 
 }

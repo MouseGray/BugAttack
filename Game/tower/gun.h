@@ -2,6 +2,8 @@
 
 #include <ammo/shot.h>
 
+#include <enemy/enemy.h>
+
 #include "tower.h"
 
 namespace bugattack::tower
@@ -14,9 +16,17 @@ class Gun final : public TowerBase
 public:
     Gun(class Geometry geometry);
 
-    void Update(const std::vector<std::shared_ptr<enemy::Enemy>> &enemies, float time) override;
+    bool Shoot(std::shared_ptr<enemy::Enemy> target) noexcept override;
+
+    void ValidateAmmo() noexcept;
 
     float Radius() const override;
+
+    float MaxRealodTime() const override;
+
+    std::vector<ammo::Shot>::iterator begin() noexcept;
+
+    std::vector<ammo::Shot>::iterator end() noexcept;
 
     std::vector<ammo::Shot>::const_iterator begin() const noexcept;
 
@@ -24,5 +34,26 @@ public:
 private:
     std::vector<ammo::Shot> ammo_;
 };
+
+template<typename IIt>
+void Update(Gun& gun, IIt begin, IIt end, float time)
+{
+    gun.Reload(time);
+
+    std::for_each(gun.begin(), gun.end(), [time](auto&& ammo){
+        ammo::Update(ammo, time);
+    });
+
+    gun.ValidateAmmo();
+
+    auto target = FindTarget(gun, begin, end);
+
+    if(!target)
+        return;
+
+    gun.SetGeometry(LookAt(gun.Geometry(), target->Geometry()));
+
+    gun.Shoot(target);
+}
 
 }
