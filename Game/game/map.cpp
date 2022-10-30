@@ -98,6 +98,8 @@ void Map::Restart()
     towers_.clear();
     enemies_.clear();
 
+    field_ = field::Field{"../maps/default.map"};
+
     level_.Restart();
 }
 

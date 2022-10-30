@@ -20,7 +20,7 @@ class Map : public Unit
     using TowerIterator = utils::DereferenceIteratorConst<std::vector<GameTower>::const_iterator>;
 
     static constexpr int MAX_HEALTH = 3;
-    static constexpr int START_GOLD = 500;
+    static constexpr int START_GOLD = 2000;
 public:
     Map();
 
